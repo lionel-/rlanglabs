@@ -46,3 +46,17 @@ test_that("can serialise quosure that don't refer to search path", {
   expect_equal(out, function() 10L)
   expect_identical(get_env(out), global_env())
 })
+
+test_that("the relevant region of the global environment is serialised", {
+  global_clo <- with_env(global_env(), {
+    globar <- "bar"
+    globaz <- "baz"
+    function() list(globar, globaz)
+  })
+
+  out <- roundtrip(global_clo)
+  expect_identical(out(), list("bar", "baz"))
+
+  out_env <- get_env(out)
+  expect_identical(env_names(out_env), chr("globar", "globaz"))
+})

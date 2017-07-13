@@ -18,11 +18,18 @@ serialise_bytes <- function(x) {
     path_nms <- map_chr(path_bindings, attr, which = "path_name")
     path_attached <- keep(path_bindings, `==`, "attached")
 
+    if (length(path_nms) && path_nms == ".GlobalEnv") {
+      global <- new_environment(attr(path_bindings[[1]], "objects"))
+    } else {
+      global <- NULL
+    }
+
     if (length(path_nms)) {
       x <- set_attrs(x,
         class = "serialised_path",
         path = path_nms,
-        attached = path_attached
+        attached = path_attached,
+        global = global
       )
     }
   }
@@ -38,17 +45,27 @@ bytes_unserialise <- function(bytes) {
     return(x)
   }
 
-  path <- attr(x, "path")
-  attached <- attr(x, "attached")
+  path <- as_list(attr(x, "path"))
 
-  is_pkg <- map_lgl(path, is_package_name)
-  path <- map_if(path, is_pkg, new_package_env)
-  path <- map_if(path, !is_pkg, function(x) abort("TODO"))
+  if (path[[1]] == ".GlobalEnv") {
+    path[[1]] <- attr(x, "global")
+  }
 
-  tail <- env_tail(x, sentinel = global_env())
-  mut_env_parent(tail, envs_link(path))
+  path <- map_if(path, is_package_name, new_package_env)
+  path <- map_if(path, is_string, function(x) abort("TODO"))
 
-  set_attrs(x, class = NULL, attached = NULL, path = NULL)
+  # Make sure to keep the local environments if they exist
+  old_enclosure <- get_env(x)
+  new_enclosure <- envs_link(path)
+  if (is_reference(old_enclosure, global_env())) {
+    x <- set_env(x, new_enclosure)
+  } else {
+    tail <- env_tail(x, sentinel = global_env())
+    mut_env_parent(tail, new_enclosure)
+  }
+
+  # FIXME: Wrap serialisation attributes in a single object
+  set_attrs(x, class = NULL, attached = NULL, path = NULL, global = NULL)
 }
 
 has_enclosure <- function(x) {
@@ -70,18 +87,43 @@ has_search_path <- function(x) {
 
   FALSE
 }
+
 clo_trace_path <- function(clo) {
   stopifnot(has_enclosure(clo))
   expr <- get_expr(clo)
   env <- get_env(clo)
 
+  # Find all bindings scoped in the search path
   bindings <- clo_search_bindings(clo)
-  path_bindings <- unname(compact(bindings))
-  path_attached <- keep(path_bindings, `%in%`, c("package", "scoped"))
-  path <- unique(map_chr(path_attached, attr, which = "path_name"))
 
-  order <- order(match(path, search()))
+  # Gather all references to global object together
+  bindings <- merge_globals(bindings)
+
+  # Discard redundant environments
+  bindings <- unname(compact(bindings))
+  bindings <- bindings[!duplicated(bindings)]
+
+  # Keep only environments on the search path
+  path_attached <- keep(bindings, `%in%`, c("global", "package", "scoped"))
+  path_names <- map_chr(path_attached, attr, which = "path_name")
+
+  order <- order(match(path_names, search()))
   path_attached[order]
+}
+merge_globals <- function(bindings) {
+  is_global <- bindings == "global"
+  globals <- bindings[is_global]
+
+  if (length(globals)) {
+    global <- globals[[1]]
+    objects <- set_names(names(globals))
+    objects <- map(objects, env_get, env = global_env())
+    global <- set_attrs(global, objects = objects)
+
+    bindings <- c(list(global), bindings[!is_global])
+  }
+
+  bindings
 }
 
 # Using environment for constant-time insertion

@@ -5,7 +5,11 @@ ns_imports <- getNamespaceImports
 
 
 is_package_name <- function(nm) {
-  identical(substr(nm, 0, 8), "package:")
+  if (!is_string(nm)) {
+    FALSE
+  } else {
+    identical(substr(nm, 0, 8), "package:")
+  }
 }
 is_package_env <- function(env) {
   if (!is_env(env)) {
