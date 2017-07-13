@@ -35,7 +35,7 @@ serialise_bytes <- function(x) {
 }
 
 has_enclosure <- function(x) {
-  is_closure(clo) || is_quosure(clo)
+  is_closure(x) || is_formulaish(x)
 }
 has_search_path <- function(x) {
   env <- get_env(x, default = return(FALSE))
