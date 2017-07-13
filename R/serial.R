@@ -1,4 +1,34 @@
+#' Serialise and unserialise objects
+#'
+#' These functions are equivalent to [base::serialize()] and
+#' [base::unserialize()] but try to preserve the enclosure of
+#' closures, formulas, and quosures. It works by detecting which
+#' environment or package attached on the search path at
+#' serialisation-time are required by the function or quosure. The
+#' relevant environments are then reconstructed in a fake search path
+#' when the object is unserialised. The fake search path is specific
+#' to each closure and quosure.
+#'
+#' @param x An object to serialise.
+#' @param bytes A raw vector to unserialise.
+#' @export
+serialise_bytes <- function(x) {
+  if (has_search_path(x)) {
+    path_bindings <- clo_trace_path(x)
+    path_nms <- map_chr(path_bindings, attr, which = "path_name")
+    path_attached <- keep(path_bindings, `==`, "attached")
 
+    x <- set_attrs(x,
+      class = "serialised_path",
+      path = path_nms,
+      attached = path_attached
+    )
+  }
+
+  serialize(x, NULL)
+}
+#' @rdname serialise_bytes
+#' @export
 bytes_unserialise <- function(bytes) {
   x <- unserialize(bytes)
 
@@ -17,21 +47,6 @@ bytes_unserialise <- function(bytes) {
   mut_env_parent(tail, envs_link(path))
 
   set_attrs(x, class = NULL, attached = NULL, path = NULL)
-}
-serialise_bytes <- function(x) {
-  if (has_search_path(x)) {
-    path_bindings <- clo_trace_path(x)
-    path_nms <- map_chr(path_bindings, attr, which = "path_name")
-    path_attached <- keep(path_bindings, `==`, "attached")
-
-    x <- set_attrs(x,
-      class = "serialised_path",
-      path = path_nms,
-      attached = path_attached
-    )
-  }
-
-  serialize(x, NULL)
 }
 
 has_enclosure <- function(x) {
