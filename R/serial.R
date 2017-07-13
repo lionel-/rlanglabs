@@ -18,11 +18,13 @@ serialise_bytes <- function(x) {
     path_nms <- map_chr(path_bindings, attr, which = "path_name")
     path_attached <- keep(path_bindings, `==`, "attached")
 
-    x <- set_attrs(x,
-      class = "serialised_path",
-      path = path_nms,
-      attached = path_attached
-    )
+    if (length(path_nms)) {
+      x <- set_attrs(x,
+        class = "serialised_path",
+        path = path_nms,
+        attached = path_attached
+      )
+    }
   }
 
   serialize(x, NULL)

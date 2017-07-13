@@ -30,8 +30,7 @@ test_that("relevant packages are correctly roundtripped", {
     foo <- "foo"
     # Refers to rlang, utils, and local env
     function() { ll(foo, apropos) }
-  })
-  )
+  }))
   out <- roundtrip(clo)
   expect_identical(out(), list("foo", utils::apropos))
 
@@ -39,4 +38,11 @@ test_that("relevant packages are correctly roundtripped", {
   expect_true(every(parents[1:3], is_package_env))
   expect_identical(map_chr(parents[1:2], attr, which = "name"), c("package:rlang", "package:utils"))
   expect_true(is_reference(parents[[3]], base_env()))
+})
+
+test_that("can serialise quosure that don't refer to search path", {
+  clo <- with_env(global_env(), function() 10L)
+  out <- roundtrip(clo)
+  expect_equal(out, function() 10L)
+  expect_identical(get_env(out), global_env())
 })
