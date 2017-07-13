@@ -1,7 +1,8 @@
 
-is_namespace <- isNamespace
-ns_exports <- getNamespaceExports
-ns_imports <- getNamespaceImports
+is_namespace <- function(ns) isNamespace(ns)
+ns_exports <- function(ns) getNamespaceExports(ns)
+ns_imports <- function(ns) getNamespaceImports(ns)
+is_empty_env <- function(x) is_reference(x, empty_env())
 
 
 is_package_name <- function(nm) {
