@@ -144,7 +144,7 @@ search_expr_bindings <- function(syms, expr, env) {
 }
 search_symbol_bindings <- function(syms, expr, env) {
   nm <- as_string(expr)
-  syms[[nm]] <- env_type(binding_env(nm, env))
+  if (nchar(nm) > 0) syms[[nm]] <- env_type(binding_env(nm, env))
 }
 search_language_bindings <- function(syms, expr, env) {
   car <- node_car(expr)
