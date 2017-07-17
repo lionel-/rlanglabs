@@ -60,3 +60,14 @@ test_that("the relevant region of the global environment is serialised", {
   out_env <- get_env(out)
   expect_identical(env_names(out_env), chr("globar", "globaz"))
 })
+
+test_that("dataframes with filters are serialised", {
+  df_clo <- with_env(global_env(), {
+    function(df) {
+      df[1,]
+    }
+  })
+
+  out <- roundtrip(df_clo)
+  expect_identical(out(iris), df_clo(iris))
+})
