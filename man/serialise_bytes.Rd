@@ -7,9 +7,9 @@
 \alias{bytes_unserialise.default}
 \title{Serialise and unserialise objects}
 \usage{
-serialise_bytes(x)
+serialise_bytes(x, global_env = FALSE)
 
-\method{serialise_bytes}{default}(x)
+\method{serialise_bytes}{default}(x, global_env = FALSE)
 
 bytes_unserialise(bytes)
 
@@ -17,6 +17,10 @@ bytes_unserialise(bytes)
 }
 \arguments{
 \item{x}{An object to serialise.}
+
+\item{global_env}{Whether to include a stripped version of the
+global environment as part of the fake search path constructed
+around closures.}
 
 \item{bytes}{A raw vector to unserialise.}
 }

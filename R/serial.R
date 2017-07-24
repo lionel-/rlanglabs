@@ -10,16 +10,18 @@
 #' to each closure and quosure.
 #'
 #' @param x An object to serialise.
-#' @param bytes A raw vector to unserialise.
+#' @param global_env Whether to include a stripped version of the
+#'   global environment as part of the fake search path constructed
+#'   around closures.
 #' @export
-serialise_bytes <- function(x) {
+serialise_bytes <- function(x, global_env = FALSE) {
   UseMethod("serialise_bytes")
 }
 #' @rdname serialise_bytes
 #' @export
-serialise_bytes.default <- function(x) {
+serialise_bytes.default <- function(x, global_env = FALSE) {
   if (has_search_path(x)) {
-    path_bindings <- clo_trace_path(x)
+    path_bindings <- clo_trace_path(x, global_env)
     path_nms <- map_chr(path_bindings, attr, which = "path_name")
     path_attached <- keep(path_bindings, `==`, "attached")
 
@@ -43,6 +45,7 @@ serialise_bytes.default <- function(x) {
 }
 
 #' @rdname serialise_bytes
+#' @param bytes A raw vector to unserialise.
 #' @export
 bytes_unserialise <- function(bytes) {
   UseMethod("bytes_unserialise")
@@ -99,7 +102,7 @@ has_search_path <- function(x) {
   FALSE
 }
 
-clo_trace_path <- function(clo) {
+clo_trace_path <- function(clo, global_env) {
   stopifnot(has_enclosure(clo))
   expr <- get_expr(clo)
   env <- get_env(clo)
@@ -115,7 +118,12 @@ clo_trace_path <- function(clo) {
   bindings <- bindings[!duplicated(bindings)]
 
   # Keep only environments on the search path
-  path_attached <- keep(bindings, `%in%`, c("global", "package", "scoped"))
+  if (global_env) {
+    serialised_types <- c("global", "package", "scoped")
+  } else {
+    serialised_types <- c("package", "scoped")
+  }
+  path_attached <- keep(bindings, `%in%`, serialised_types)
   path_names <- map_chr(path_attached, attr, which = "path_name")
 
   order <- order(match(path_names, search()))

@@ -15,14 +15,14 @@ test_that("can trace the search path of closures", {
 
   # Referring to base::`{` and utils::apropos
   clo <- with_env(pkg_env, function() { apropos })
-  path <- clo_trace_path(clo)
+  path <- clo_trace_path(clo, global_env = TRUE)
   path_names <- map_chr(path, attr, which = "name")
   expect_identical(path_names, c("utils", "base"))
 })
 
 
-roundtrip <- function(x) {
-  bytes_unserialise(serialise_bytes(x))
+roundtrip <- function(x, global_env = TRUE) {
+  bytes_unserialise(serialise_bytes(x, global_env))
 }
 
 test_that("relevant packages are correctly roundtripped", {
@@ -70,4 +70,13 @@ test_that("dataframes with filters are serialised", {
 
   out <- roundtrip(df_clo)
   expect_identical(out(iris), df_clo(iris))
+})
+
+test_that("the global env is not serialised by default", {
+  clo <- with_env(global_env(), {
+    function() { environment }
+  })
+
+  out <- roundtrip(clo, global_env = FALSE)
+  expect_identical(get_env(out), base_env())
 })
