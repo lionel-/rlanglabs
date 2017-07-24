@@ -189,3 +189,29 @@ chain_env_parent <- function(env, parent) {
   mut_env_parent(env, parent)
   parent
 }
+
+#' Mirror an environment
+#'
+#' A mirror is an environment that shares the same objects but not the
+#' same parent. It is an efficient way of cloning an environment when
+#' the purpose of the cloning is to have a different parent.
+#'
+#' @param env An environment to clone.
+#' @param parent The parent of the new mirror environment.
+#' @export
+#' @examples
+#' env <- env()
+#' mirror <- env_mirror(env)
+#'
+#' # A mirror is like a shallow clone. The contents of the mirror are
+#' # shared with the original environment:
+#' mirror$a <- "foo"
+#' env$a
+#'
+#' # On the other hand, the mirror can have a different parent:
+#' mut_env_parent(mirror, base_env())
+#' env_parent(mirror)
+#' env_parent(env)
+env_mirror <- function(env, parent = env_parent(env)) {
+  .Call(rlang_env_mirror, get_env(env), parent)
+}
