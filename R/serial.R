@@ -193,3 +193,11 @@ binding_env <- function(nm, env) {
   }
   env
 }
+
+
+#' @rdname serialise_bytes
+#' @export
+serialize_bytes <- serialise_bytes
+#' @rdname serialise_bytes
+#' @export
+bytes_unserialize <- bytes_unserialise

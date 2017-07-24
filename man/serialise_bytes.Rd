@@ -5,6 +5,8 @@
 \alias{serialise_bytes.default}
 \alias{bytes_unserialise}
 \alias{bytes_unserialise.default}
+\alias{serialize_bytes}
+\alias{bytes_unserialize}
 \title{Serialise and unserialise objects}
 \usage{
 serialise_bytes(x, global_env = FALSE)
@@ -14,6 +16,10 @@ serialise_bytes(x, global_env = FALSE)
 bytes_unserialise(bytes)
 
 \method{bytes_unserialise}{default}(bytes)
+
+serialize_bytes(x, global_env = FALSE)
+
+bytes_unserialize(bytes)
 }
 \arguments{
 \item{x}{An object to serialise.}
