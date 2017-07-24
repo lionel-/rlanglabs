@@ -2,12 +2,18 @@
 % Please edit documentation in R/serial.R
 \name{serialise_bytes}
 \alias{serialise_bytes}
+\alias{serialise_bytes.default}
 \alias{bytes_unserialise}
+\alias{bytes_unserialise.default}
 \title{Serialise and unserialise objects}
 \usage{
 serialise_bytes(x)
 
+\method{serialise_bytes}{default}(x)
+
 bytes_unserialise(bytes)
+
+\method{bytes_unserialise}{default}(bytes)
 }
 \arguments{
 \item{x}{An object to serialise.}

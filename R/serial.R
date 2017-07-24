@@ -13,6 +13,11 @@
 #' @param bytes A raw vector to unserialise.
 #' @export
 serialise_bytes <- function(x) {
+  UseMethod("serialise_bytes")
+}
+#' @rdname serialise_bytes
+#' @export
+serialise_bytes.default <- function(x) {
   if (has_search_path(x)) {
     path_bindings <- clo_trace_path(x)
     path_nms <- map_chr(path_bindings, attr, which = "path_name")
@@ -36,9 +41,15 @@ serialise_bytes <- function(x) {
 
   serialize(x, NULL)
 }
+
 #' @rdname serialise_bytes
 #' @export
 bytes_unserialise <- function(bytes) {
+  UseMethod("bytes_unserialise")
+}
+#' @rdname serialise_bytes
+#' @export
+bytes_unserialise.default <- function(bytes) {
   x <- unserialize(bytes)
 
   if (!inherits(x, "serialised_path")) {
