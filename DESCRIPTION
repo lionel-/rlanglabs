@@ -16,7 +16,7 @@ Imports:
 Suggests:
     testthat
 Remotes:
-    lionel-/rlang@7cd4a9f
+    tidyverse/rlang
 Encoding: UTF-8
 LazyData: true
 ByteCompile: true
