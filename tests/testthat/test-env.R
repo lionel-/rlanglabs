@@ -40,3 +40,16 @@ test_that("environments are linked together", {
   expect_identical(env_parent(env, 2), c)
   expect_identical(env_parent(env, 3), get_env())
 })
+
+test_that("mirror envs share objects but not parent", {
+  env <- env()
+  mirror <- env_mirror(env)
+
+  expect_identical(env_names(mirror), chr())
+  env$a <- "foo"
+  expect_identical(env_names(mirror), "a")
+
+  mut_env_parent(mirror, base_env())
+  expect_identical(env_parent(mirror), base_env())
+  expect_identical(env_parent(env), get_env())
+})
